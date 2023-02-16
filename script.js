@@ -1,17 +1,26 @@
 //You can edit ALL of the code here
 const url = "https://api.tvmaze.com/shows/82/episodes"
-let allEpisodes = []
+let allEpisodes = [];
+const selectInput = document.getElementById("select-input");
+const searchInput = document.getElementById("search-input");
+const selectShow = document.getElementById("select-show");
+async function setup() {
+  makeShowDropdown();
+  try{
+    const res = await fetch(url);
+    const data =await res.json();
+    allEpisodes = data;
 
-function setup() {
-  fetch(url)
-    .then((res) => res.json())
-    .then((data) => {
-     
-      allEpisodes = data;
-      makePageForEpisodes(allEpisodes);
-    })
-    .catch((err) => console.error(err));
+    makePageForEpisodes(allEpisodes);
+
+  } catch (err){
+    console.log(err);
+  }
+  
+
+  
 }
+
 
 function makeSeasonAndEpisode(episode){
   const {season, number} = episode;
@@ -23,12 +32,11 @@ function makeSeasonAndEpisode(episode){
 function makePageForEpisodes(episodeList) {
   const allEpisodesEl = document.getElementById("allEpisodes");
 
-  const selectElem = document.getElementById("select-input");
-  console.log(selectElem);
-  allEpisodesEl.innerHTML = "";
-  const countParagraph = document.createElement("p");
-  countParagraph.innerText = `Showing ${episodeList.length} episodes`
-  allEpisodesEl.appendChild(countParagraph);
+  console.log(selectInput);
+  
+  clearElement(allEpisodesEl);
+  makeEpisodeCount(allEpisodesEl,episodeList)
+  clearElement(selectInput);
   episodeList.forEach(episode =>{
     const epDiv = document.createElement("div");
     epDiv.classList.add("episodes");
@@ -49,11 +57,11 @@ function makePageForEpisodes(episodeList) {
     const option = document.createElement("option");
     option.textContent = `${makeSeasonAndEpisode(episode)} - ${episode.name}`;
     option.value = episode.id;
-    selectElem.appendChild(option);
+    selectInput.appendChild(option);
   })
   console.log(episodeList);
 }
-const searchInput = document.getElementById("search-input");
+
 searchInput.addEventListener("input",(event) => {
 const searchString = event.target.value.toLowerCase();
   const filteredEpisodes = allEpisodes.filter((episode)=> {
@@ -63,7 +71,7 @@ const searchString = event.target.value.toLowerCase();
   });
   makePageForEpisodes(filteredEpisodes)
 });
-const selectInput = document.getElementById("select-input");
+
 selectInput.addEventListener("change",(e) => {
   const idSelectedByUser = Number(e.target.value);
   console.log({idSelectedByUser});
@@ -73,6 +81,42 @@ selectInput.addEventListener("change",(e) => {
       makePageForEpisodes([selectedEpisode]);
     }
 });
+selectShow.addEventListener("change",async(e)=>{
+  const showIdSeleUrlctedByUser = Number(e.target.value);
+  const nextFetchUrl= getUrlFromId(showIdSeleUrlctedByUser);
+  try{
+    const res = await fetch(nextFetchUrl);
+    const data =await res.json();
+    allEpisodes = data;
 
+    makePageForEpisodes(allEpisodes);
+
+  } catch (err){
+    console.log(err);
+  };
+  searchInput.value = "";
+});
 
 window.onload = setup;
+function clearElement(el){
+  el.innerHTML = '';
+}
+function makeEpisodeCount(el,list){
+  const countParagraph = document.createElement("p");
+  countParagraph.innerText = `Showing ${list.length} episodes`
+  el.appendChild(countParagraph);
+}
+function makeShowDropdown(){
+  
+  const allShows = getAllShows();
+  allShows.forEach((show)=>{
+    const option =document.createElement("option");
+    option.textContent = show.name;
+    option.value = show.id;
+    selectShow.appendChild(option);
+  });
+  
+}
+function getUrlFromId(id) {
+  return `https://api.tvmaze.com/shows/${id}/episodes`;
+}
