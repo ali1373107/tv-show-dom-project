@@ -15,13 +15,8 @@ async function setup() {
 
   } catch (err){
     console.log(err);
-  }
-  
-
-  
+  } 
 }
-
-
 function makeSeasonAndEpisode(episode){
   const {season, number} = episode;
   const paddedSeason = season.toString().padStart(2, "0");
@@ -106,9 +101,39 @@ function makeEpisodeCount(el,list){
   countParagraph.innerText = `Showing ${list.length} episodes`
   el.appendChild(countParagraph);
 }
+function makeEpisodeTitle(el, episode) {
+  const paragraph = document.createElement("p");
+  paragraph.textContent = `${makeSeasonAndEpisode(episode)}: ${episode.name}`;
+  el.appendChild(paragraph);
+}
+function makeEpisodeImage(el, episode) {
+  const image = document.createElement("img");
+  image.src = episode.image.medium;
+  el.appendChild(image);
+}
+function makeEpisodeSummary(el, episode) {
+  el.innerHTML += episode.summary;
+}
+
+function makeEpisodeDropdownItem(el, episode) {
+  const option = document.createElement("option");
+  option.textContent = `${makeSeasonAndEpisode(episode)} - ${episode.name}`;
+  option.value = episode.id;
+  el.appendChild(option);
+}
+
+function makeSeasonAndEpisode(episode) {
+  const { season, number } = episode;
+  const paddedSeason = season.toString().padStart(2, "0");
+  const paddedEpisode = number.toString().padStart(2, "0");
+
+  return `S${paddedSeason}E${paddedEpisode}`;
+}
 function makeShowDropdown(){
   
   const allShows = getAllShows();
+  
+  
   allShows.forEach((show)=>{
     const option =document.createElement("option");
     option.textContent = show.name;
